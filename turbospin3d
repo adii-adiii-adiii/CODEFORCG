@@ -1,0 +1,89 @@
+#include <GL/glut.h>
+#include <math.h>
+
+// Rotation angle for the turbo blades
+float angle = 0.0f;
+
+// Initialize OpenGL graphics settings
+void init() {
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set background to black
+    glEnable(GL_DEPTH_TEST);              // Enable depth testing for 3D
+}
+
+// Function to draw a single turbo blade
+void drawBlade() {
+    glBegin(GL_TRIANGLES);
+        // Blade face 1 - Bright Cyan
+        glColor3f(0.0f, 1.0f, 1.0f);
+        glVertex3f(0.0f, 0.0f, 0.0f);
+        glVertex3f(0.2f, 0.8f, 0.1f);
+        glVertex3f(0.4f, 0.7f, 0.0f);
+
+        // Blade face 2 - Deep Blue tint for depth
+        glColor3f(0.0f, 0.5f, 1.0f);
+        glVertex3f(0.0f, 0.0f, 0.0f);
+        glVertex3f(0.4f, 0.7f, 0.0f);
+        glVertex3f(0.3f, 0.0f, -0.1f);
+    glEnd();
+}
+
+// Display callback function
+void display() {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glLoadIdentity();
+
+    // Rotate the entire turbo assembly
+    glRotatef(angle, 0.0f, 0.0f, 1.0f);
+
+    // Draw the central hub (Core of the Turbo)
+    glColor3f(0.8f, 0.8f, 0.8f);
+    glutSolidSphere(0.15, 32, 32);
+
+    // Draw 6 turbo blades evenly spaced
+    for (int i = 0; i < 6; i++) {
+        glPushMatrix();
+        glRotatef(i * 60.0f, 0.0f, 0.0f, 1.0f); // Space out blades by 60 degrees
+        drawBlade();
+        glPopMatrix();
+    }
+
+    glutSwapBuffers();
+}
+
+// Idle callback function to update rotation angle
+void idle() {
+    angle += 2.0f; // Increase value to make the turbo spin faster
+    if (angle > 360.0f) {
+        angle -= 360.0f;
+    }
+    glutPostRedisplay(); // Request a redraw
+}
+
+// Reshape callback function to maintain aspect ratio
+void reshape(int w, int h) {
+    glViewport(0, 0, w, h);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    if (w <= h)
+        glOrtho(-1.0, 1.0, -1.0 * (GLfloat)h / (GLfloat)w, 1.0 * (GLfloat)h / (GLfloat)w, -1.0, 1.0);
+    else
+        glOrtho(-1.0 * (GLfloat)w / (GLfloat)h, 1.0 * (GLfloat)w / (GLfloat)h, -1.0, 1.0, -1.0, 1.0);
+    glMatrixMode(GL_MODELVIEW);
+}
+
+int main(int argc, char** argv) {
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+    glutInitWindowSize(600, 600);
+    glutInitWindowPosition(100, 100);
+    glutCreateWindow("3D Turbo Fan Animation");
+
+    init();
+
+    glutDisplayFunc(display);
+    glutReshapeFunc(reshape);
+    glutIdleFunc(idle);
+
+    glutMainLoop();
+    return 0;
+}
